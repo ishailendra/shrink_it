@@ -1,0 +1,51 @@
+name: shrink_it_server
+version: '3.8'
+services:
+  shrink_it:
+    container_name: shrink_it
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shrink_it
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+      DB_USER: ${DB_USER}
+      DB_PWD: ${DB_PWD}
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      BASE_URL: ${BASE_URL}
+    depends_on:
+      - redis
+      - mysql_db
+    ports:
+      - "8080:8080"
+    networks:
+      - shrink_it_ntw
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: always
+    command: /bin/sh -c "redis-server --requirepass $$REDIS_HOST_PASSWORD"
+    environment:
+      REDIS_HOST_PASSWORD: ${REDIS_HOST_PASSWORD}
+    networks:
+      - shrink_it_ntw
+
+  mysql_db:
+    container_name: mysql_db
+    image: mysql
+    restart: always
+    command: --init-file /data/application/init.sql
+    volumes:
+      - ./init.sql:/data/application/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - shrink_it_ntw
+
+networks:
+  shrink_it_ntw:
+    driver: bridge

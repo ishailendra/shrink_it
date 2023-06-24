@@ -1,0 +1,43 @@
+logging:
+  file:
+    name: src/main/resources/log/${spring.application.name}.log
+  level:
+    org:
+      hibernate: ERROR
+      springframework:
+        web: DEBUG
+spring:
+  application:
+    name: shrink_it
+  jpa:
+    hibernate:
+#      generate-ddl: true
+#      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    show-sql: true
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/shrink_it #jdbc:mysql://localhost:3306/shrink_it
+    username: ${DB_USER:root}
+    password: ${DB_PWD:root}
+  cache:
+    type: redis
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+
+
+shrink:
+  base:
+    url: ${BASE_URL:http://localhost:8080/}
+
+
+bot:
+  token: ${TELEGRAM_TOKEN:-}
+  username: shrink_it_bot
+
+springdoc:
+  packages-to-scan: com.shail.shrinkit.controller
