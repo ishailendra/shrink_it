@@ -4,7 +4,7 @@
 
 URL shortening web service, which provides short aliases for redirection of long URLs.
 The user's browser will immediately redirect to the original (long) url when they access the short URL.
-
+Service can be used and integrated with telegram bot.
 
 ## Implementation
 ### Tech Used
