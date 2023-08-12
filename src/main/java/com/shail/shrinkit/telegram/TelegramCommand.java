@@ -1,7 +1,6 @@
 package com.shail.shrinkit.telegram;
 
 import org.apache.commons.lang3.StringUtils;
-import org.telegram.telegrambots.meta.api.objects.Message;
 
 public enum TelegramCommand {
     START("/start"),

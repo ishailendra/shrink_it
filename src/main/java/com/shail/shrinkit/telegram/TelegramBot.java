@@ -1,9 +1,11 @@
 package com.shail.shrinkit.telegram;
 
-import com.shail.shrinkit.model.ShrinkRequest;
-import com.shail.shrinkit.model.ShrinkResponse;
 import com.shail.shrinkit.service.ShrinkService;
-import com.shail.shrinkit.telegram.handler.*;
+import com.shail.shrinkit.telegram.handler.DefaultHandler;
+import com.shail.shrinkit.telegram.handler.ShrinkHandler;
+import com.shail.shrinkit.telegram.handler.StartHandler;
+import com.shail.shrinkit.telegram.handler.TelegramCmdHandler;
+import com.shail.shrinkit.telegram.handler.UnShrinkHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
