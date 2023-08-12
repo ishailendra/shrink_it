@@ -40,7 +40,7 @@ public class ShrinkController {
 
             String response = StringUtils.isBlank(url) ? "URL_NOT_FOUND" : url;
             HttpStatus status = StringUtils.isBlank(url) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
-//            return new ResponseEntity<String>(response, status);
+
             if (status.is2xxSuccessful())
                 return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(response)).build();
             else
