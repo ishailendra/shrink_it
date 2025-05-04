@@ -1,5 +1,6 @@
 name: shrink_it_server
 version: '3.8'
+
 services:
   shrink_it:
     container_name: shrink_it
@@ -8,43 +9,99 @@ services:
       context: .
       dockerfile: Dockerfile
     image: shrink_it
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
     environment:
+      SPRING_APP_NAME: ${SPRING_APP_NAME}
+      SERVER_PORT: ${SERVER_PORT}
+      LOG_FILE_PATH: ${LOG_FILE_PATH}
+
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
-      REDIS_HOST: ${REDIS_HOST}
+      DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PWD: ${DB_PWD}
-      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      DB_MAX_POOL_SIZE: ${DB_MAX_POOL_SIZE}
+      DB_MIN_IDLE: ${DB_MIN_IDLE}
+      DB_IDLE_TIMEOUT: ${DB_IDLE_TIMEOUT}
+      DB_MAX_LIFETIME: ${DB_MAX_LIFETIME}
+      DB_CONNECTION_TIMEOUT: ${DB_CONNECTION_TIMEOUT}
+      DB_POOL_NAME: ${DB_POOL_NAME}
+
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      CONSUL_DISCOVERY_HOST: ${CONSUL_DISCOVERY_HOST}
+      CONSUL_DISCOVERY_PORT: ${CONSUL_DISCOVERY_PORT}
+      CONSUL_DISCOVERY_SCHEME: ${CONSUL_DISCOVERY_SCHEME}
+
       BASE_URL: ${BASE_URL}
+
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_WEBHOOK_PATH: ${TELEGRAM_WEBHOOK_PATH}
+      TELEGRAM_WEBHOOK_BASE_URL: ${TELEGRAM_WEBHOOK_BASE_URL}
     depends_on:
       - redis
-      - mysql_db
+      - postgres
+      - consul
+#    ports:
+#      - "8080:8080"
+    networks:
+      - shrink_it_ntw
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PWD}
+    volumes:
+      - ./postgres-init:/docker-entrypoint-initdb.d
     ports:
-      - "8080:8080"
+      - "5432:5432"
     networks:
       - shrink_it_ntw
 
   redis:
     container_name: redis
-    image: redis:alpine
+    image: redis:latest
     restart: always
-    command: /bin/sh -c "redis-server --requirepass $$REDIS_HOST_PASSWORD"
-    environment:
-      REDIS_HOST_PASSWORD: ${REDIS_HOST_PASSWORD}
+    command: /bin/sh -c "redis-server --requirepass ${REDIS_PASSWORD}"
+    ports:
+      - "6379:6379"
     networks:
       - shrink_it_ntw
 
-  mysql_db:
-    container_name: mysql_db
-    image: mysql
+  insight:
+    container_name: redis_insight
+    image: redis/redisinsight:latest
     restart: always
-    command: --init-file /data/application/init.sql
-    volumes:
-      - ./init.sql:/data/application/init.sql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "5540:5540"
     networks:
       - shrink_it_ntw
+
+  consul:
+    container_name: consul
+    image: consul:1.15
+    restart: always
+    ports:
+      - "8500:8500"         # Web UI
+      - "8600:8600/udp"     # DNS
+    networks:
+      - shrink_it_ntw
+    volumes:
+      - consul_data:/consul/data
+    command: agent -server -bootstrap -ui -client=0.0.0.0 -data-dir=/consul/data
+
+volumes:
+  consul_data:
 
 networks:
   shrink_it_ntw:
