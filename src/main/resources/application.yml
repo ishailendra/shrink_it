@@ -1,43 +1,87 @@
-logging:
-  file:
-    name: src/main/resources/log/${spring.application.name}.log
-  level:
-    org:
-      hibernate: ERROR
-      springframework:
-        web: DEBUG
 spring:
   application:
-    name: shrink_it
+    name: ${SPRING_APP_NAME:shrink_it}
+
+  server:
+    port: ${SERVER_PORT:0}
+
+  cloud:
+    consul:
+      host: ${CONSUL_DISCOVERY_HOST:localhost}
+      port: ${CONSUL_DISCOVERY_PORT:8500}
+      scheme: ${CONSUL_DISCOVERY_SCHEME:http}
+      config:
+        enabled: false
+      discovery:
+        enabled: true
+        prefer-ip-address: true
+        instanceId: ${SPRING_APP_NAME:shrink_it}-${random.int[1,99]}
+        lower-case-service-id: true
+        healthCheckPath: /actuator/health
+        healthCheckInterval: 10s
+
+  datasource:
+    initialize: false
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:shrink_it}
+    username: ${DB_USER:postgres}
+    password: ${DB_PWD:root}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:10}
+      minimum-idle: ${DB_MIN_IDLE:2}
+      idle-timeout: ${DB_IDLE_TIMEOUT:30000}
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+      pool-name: ${DB_POOL_NAME:HikariCP}
+
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-#      generate-ddl: true
-#      ddl-auto: update
+    #generate-ddl: true
+    #ddl-auto: create
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
-  datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/shrink_it #jdbc:mysql://localhost:3306/shrink_it
-    username: ${DB_USER:root}
-    password: ${DB_PWD:root}
+
   cache:
     type: redis
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:test_db}
 
-
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:your_default_key_here}
 
 shrink:
   base:
     url: ${BASE_URL:http://localhost:8080/}
 
-
-bot:
-  token: ${TELEGRAM_TOKEN:-}
-  username: shrink_it_bot
-
 springdoc:
-  packages-to-scan: com.shail.shrinkit.controller
+  packages-to-scan: dev.techsphere.shrinkit.controller
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+telegram:
+  bot:
+    username: ${TELEGRAM_BOT_USERNAME:shrink_it_bot}
+    webhook-path: ${TELEGRAM_WEBHOOK_PATH:/api/webhook}
+    token: ${TELEGRAM_BOT_TOKEN:secret_token}
+    webhook-base-url: ${TELEGRAM_WEBHOOK_BASE_URL:https://example.com}
+
+logging:
+  file:
+    name: ${LOG_FILE_PATH:src/main/resources/log/shrink_it.log}
+  level:
+    org.hibernate: INFO
+    org.springframework.web: INFO
